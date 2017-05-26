@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <string>
 #include "connectionplan.h"
 
 int main(int argc, char *argv[]) {
@@ -30,11 +31,12 @@ int main(int argc, char *argv[]) {
         std::cout << std::endl << "Press s for searching a path or any other character to exit program!" << std::endl;
         std::cin >> in;
         if(in.compare("s") == 0){
-            // TODO allow space characters in input of stationname
+            std::cin.clear();
+            std::cin.sync();
             std::cout << "Where do you want to start your journey?";
-            std::cin >> station1;
+            std::getline( std::cin, station1);
             std::cout << "What is your destination?";
-            std::cin >> station2;
+            std::getline( std::cin, station2);
             std::cout << std::endl;
             plan->getShortestPath(station1, station2);
         }

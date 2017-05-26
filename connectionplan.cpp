@@ -141,17 +141,17 @@ const void ConnectionPlan::printPath(std::map<std::string,Connection*> path, std
     std::string laststation = "";
     std::string metroline = con->getLine();
 
-    std::cout << "Using " << metroline << std::endl;
+    std::cout << "Using " << metroline << std::endl << std::endl;
 
-    std::cout << start_station << std::endl;
+    std::cout << "Starting from " << start_station << std::endl;
     do{
         time += con->getTraveltime();
         std::cout << "in " << con->getTraveltime() << " Minutes to " << con->getDestination() << std::endl;
 
         if(con->getLine().compare(metroline) != 0){
+            metroline = con->getLine();
             std::cout << std::endl << "In " << con->getDestination() << " change to " << metroline
                       << std::endl << std::endl;
-            metroline = con->getLine();
         }
 
         laststation = con->getDestination();
