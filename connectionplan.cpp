@@ -13,12 +13,41 @@ ConnectionPlan::~ConnectionPlan() {
             delete it->second.at(i);
             it->second.erase(it->second.begin()+i);
         }
-        stations.erase(it->first);
     }
+    stations.clear();
 }
 
 void ConnectionPlan::readFromFile(std::string filepath) {
-    // TODO
+    std::string line = "", metro="", read = "", laststation = "";
+    int traveltime = 0;
+    bool stationnext;
+    std::ifstream file(filepath, std::ios::in);
+    while (!file.eof()) {
+        getline(file, line, '\n');
+        if(line.length() > 0){
+            std::istringstream stream(line);
+            getline(stream, metro, ':');
+            stationnext = true;
+            traveltime = 0;
+            laststation = "";
+            while(!stream.eof()){
+                if(stationnext){
+                    getline(stream, read, '"');
+                    getline(stream, read, '"');
+                    if(laststation.length() > 0){
+                        addConnection(laststation, read, metro, traveltime);
+                    }
+                    laststation = read;
+                }else{
+                    getline(stream, read, ' ');
+                    getline(stream, read, ' ');
+                    std::stringstream intstream(read);
+                    intstream >> traveltime;
+                }
+                stationnext = !stationnext;
+            }
+        }
+    }
 }
 
 void ConnectionPlan::addConnection(std::string first_station, std::string second_station, std::string line,
@@ -37,7 +66,7 @@ void ConnectionPlan::addConnection(std::string first_station, std::string second
     }
 
     // Add connections
-    // TODO? Check if connections already exist
+    // TODO Maybe? Check if connections already exist
     stations[first_station].push_back(new Connection(second_station, line, traveltime));
     stations[second_station].push_back(new Connection(first_station, line, traveltime));
 }
@@ -51,4 +80,15 @@ std::vector<Connection*> ConnectionPlan::getShortestPath(std::string start_stati
 void ConnectionPlan::printPath(std::vector<Connection *> path) {
     // TODO
     std::cout << "Printing!" << std::endl;
+}
+
+void ConnectionPlan::printAdjacencyList(){
+    for (auto it = stations.begin(); it != stations.end(); ++it ){
+        std::cout << "Station: " << it->first << std::endl;
+        for(unsigned int i = 0; i < it->second.size(); i++){
+            std::cout << it->second.at(i) << std::endl;
+            delete it->second.at(i);
+            it->second.erase(it->second.begin()+i);
+        }
+    }
 }

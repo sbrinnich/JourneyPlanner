@@ -6,6 +6,9 @@
 #include <iostream>
 #include <unordered_map>
 #include <vector>
+#include <fstream>
+#include <sstream>
+#include <string.h>
 
 /*
  * Class holding the edges
@@ -59,6 +62,11 @@ public:
      * @param path a vector holding connections
      */
     void printPath(std::vector<Connection*> path);
+
+    /**
+     * Prints the adjacency list (only for debugging purposes)
+     */
+    void printAdjacencyList();
 };
 
 #endif //JOURNEYPLANNER_ADJACENCYLIST_H
