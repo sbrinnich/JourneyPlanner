@@ -8,5 +8,5 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -static -static-libgcc -st
 set(dir ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${dir}/bin")
 
-set(SOURCE_FILES main.cpp)
+set(SOURCE_FILES main.cpp connectionplan.cpp connectionplan.h)
 add_executable(JourneyPlanner ${SOURCE_FILES})
