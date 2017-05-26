@@ -25,10 +25,12 @@ ConnectionPlan::ConnectionPlan() {}
 ConnectionPlan::~ConnectionPlan() {
     for (auto it = stations.begin(); it != stations.end(); ++it ){
         for(unsigned int i = 0; i < it->second.size(); i++){
+            // Delete connection pointers and remove from connections list
             delete it->second.at(i);
             it->second.erase(it->second.begin()+i);
         }
     }
+    // Remove all stations from map
     stations.clear();
 }
 
@@ -36,26 +38,37 @@ void ConnectionPlan::readFromFile(std::string filepath) {
     std::string line = "", metro="", read = "", laststation = "";
     int traveltime = 0;
     bool stationnext;
+    // Open file
     std::ifstream file(filepath, std::ios::in);
+    // Read until end of file
     while (!file.eof()) {
+        // Get line
         getline(file, line, '\n');
+        // If line not empty
         if(line.length() > 0){
             std::istringstream stream(line);
+            // Read line name at the beginning of each line
             getline(stream, metro, ':');
+            // Next comes a station, not a traveltime
             stationnext = true;
             traveltime = 0;
             laststation = "";
+            // Read until end of line
             while(!stream.eof()){
                 if(stationnext){
+                    // Read station name between leading and trailing "
                     getline(stream, read, '"');
                     getline(stream, read, '"');
                     if(laststation.length() > 0){
+                        // If not first station read, add a connection between this and last read station
                         addConnection(laststation, read, metro, traveltime);
                     }
                     laststation = read;
                 }else{
+                    // Read traveltime
                     getline(stream, read, ' ');
                     getline(stream, read, ' ');
+                    // Parse string to int
                     std::stringstream intstream(read);
                     intstream >> traveltime;
                 }
@@ -87,6 +100,7 @@ void ConnectionPlan::addConnection(std::string first_station, std::string second
 }
 
 const void ConnectionPlan::getShortestPath(std::string start_station, std::string end_station) {
+    // TODO use penalty time for changing metro line
     // List of visited nodes
     std::vector<std::string> visited;
     // Heap
@@ -136,18 +150,25 @@ const void ConnectionPlan::getShortestPath(std::string start_station, std::strin
 
 const void ConnectionPlan::printPath(std::map<std::string,Connection*> path, std::string start_station,
                                      std::string end_station) {
+    // Init
     int time = 0;
     Connection* con = path[start_station];
     std::string laststation = "";
+    // Output line for using first
     std::string metroline = con->getLine();
 
+    // Print line and starting station
     std::cout << "Using " << metroline << std::endl << std::endl;
 
     std::cout << "Starting from " << start_station << std::endl;
+
     do{
+        // Increase total time
         time += con->getTraveltime();
+        // Output needed time to next station
         std::cout << "in " << con->getTraveltime() << " Minutes to " << con->getDestination() << std::endl;
 
+        // Output line change if needed
         if(con->getLine().compare(metroline) != 0){
             metroline = con->getLine();
             std::cout << std::endl << "In " << con->getDestination() << " change to " << metroline
@@ -155,9 +176,11 @@ const void ConnectionPlan::printPath(std::map<std::string,Connection*> path, std
         }
 
         laststation = con->getDestination();
+        // Set to next station
         con = path[con->getDestination()];
     }while(con != nullptr);
 
+    // Output last connection to destination (not in list)
     for(unsigned int i = 0; i < stations[laststation].size(); i++){
         if(stations[laststation].at(i)->getDestination() == end_station){
             std::cout << "in " << stations[laststation].at(i)->getTraveltime() << " Minutes to " <<
@@ -166,6 +189,7 @@ const void ConnectionPlan::printPath(std::map<std::string,Connection*> path, std
         }
     }
 
+    // Print total time needed
     std::cout << std::endl << "Total time needed: " << time << " Minutes" << std::endl;
 }
 
