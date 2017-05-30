@@ -94,13 +94,11 @@ void ConnectionPlan::addConnection(std::string first_station, std::string second
     }
 
     // Add connections
-    // TODO Maybe? Check if connections already exist
     stations[first_station].push_back(new Connection(second_station, line, traveltime));
     stations[second_station].push_back(new Connection(first_station, line, traveltime));
 }
 
 const void ConnectionPlan::getShortestPath(std::string start_station, std::string end_station) {
-    // TODO use penalty time for changing metro line
     // List of visited nodes
     std::vector<std::string> visited;
     // Heap
@@ -121,14 +119,22 @@ const void ConnectionPlan::getShortestPath(std::string start_station, std::strin
         for(unsigned int i = 0; i < stations[currentnode].size(); i++){
             // Push neighbour to heap if not already visited
             if (std::find(visited.begin(), visited.end(), stations[currentnode].at(i)->getDestination()) == visited.end()) {
-                heap.push(HeapNode(stations[currentnode].at(i),
-                                   mintime+stations[currentnode].at(i)->getTraveltime(), lastconnection));
+                // Check if line changes
+                if(lastconnection == nullptr || lastconnection->getLine() == stations[currentnode].at(i)->getLine()) {
+                    heap.push(HeapNode(stations[currentnode].at(i),
+                                       mintime + stations[currentnode].at(i)->getTraveltime(),
+                                       lastconnection));
+                }else{
+                    // If line changes, add time for changing
+                    heap.push(HeapNode(stations[currentnode].at(i),
+                                       mintime + stations[currentnode].at(i)->getTraveltime() + changingtime,
+                                       lastconnection));
+                }
             }
         }
         do {
             if(heap.empty()){
                 // Heap empty, problem occured
-                mintime = -1;
                 std::cout << "No path could be found! :(" << std::endl;
                 return;
             }
@@ -151,55 +157,68 @@ const void ConnectionPlan::getShortestPath(std::string start_station, std::strin
 const void ConnectionPlan::printPath(std::map<std::string,Connection*> path, std::string start_station,
                                      std::string end_station) {
     // Init
-    int time = 0;
+    int totaltime = 0, nexttime = 0;
     Connection* con = path[start_station];
-    std::string laststation = "";
-    // Output line for using first
-    std::string metroline = con->getLine();
+    std::string laststation = "", metroline;
+
+    // Calculate time needed from first to second station
+    for(unsigned int i = 0; i < stations[start_station].size(); i++){
+        if((con != nullptr && stations[start_station].at(i)->getDestination() == con->getDestination()) ||
+                // If con = nullptr, startstation directly connected to endstation
+                stations[start_station].at(i)->getDestination() == end_station ){
+            // Find shortest way from first to second station
+            if(nexttime == 0 || nexttime > stations[start_station].at(i)->getTraveltime()) {
+                // Set time for next station
+                nexttime = stations[start_station].at(i)->getTraveltime();
+                // Get line for using first
+                metroline = stations[start_station].at(i)->getLine();
+            }
+        }
+    }
+
+    // Increase total time
+    totaltime += nexttime;
 
     // Print line and starting station
     std::cout << "Using " << metroline << std::endl << std::endl;
-
     std::cout << "Starting from " << start_station << std::endl;
 
-    do{
-        // Increase total time
-        time += con->getTraveltime();
+    // Print path
+    while(con != nullptr){
         // Output needed time to next station
-        std::cout << "in " << con->getTraveltime() << " Minutes to " << con->getDestination() << std::endl;
+        std::cout << "in " << nexttime << " Minutes to " << con->getDestination() << std::endl;
+
+        // Set time for next station
+        nexttime = con->getTraveltime();
+
+        // Increase total time
+        totaltime += nexttime;
 
         // Output line change if needed
         if(con->getLine().compare(metroline) != 0){
             metroline = con->getLine();
             std::cout << std::endl << "In " << con->getDestination() << " change to " << metroline
-                      << std::endl << std::endl;
+                      << " (" << changingtime << " Minutes)" << std::endl << std::endl;
+            totaltime += changingtime;
         }
 
         laststation = con->getDestination();
         // Set to next station
         con = path[con->getDestination()];
-    }while(con != nullptr);
-
-    // Output last connection to destination (not in list)
-    for(unsigned int i = 0; i < stations[laststation].size(); i++){
-        if(stations[laststation].at(i)->getDestination() == end_station){
-            std::cout << "in " << stations[laststation].at(i)->getTraveltime() << " Minutes to " <<
-                      stations[laststation].at(i)->getDestination() << std::endl;
-            time += stations[laststation].at(i)->getTraveltime();
-        }
     }
 
+    // Output last connection to destination
+    std::cout << "in " << nexttime << " Minutes to " << end_station << std::endl;
+
     // Print total time needed
-    std::cout << std::endl << "Total time needed: " << time << " Minutes" << std::endl;
+    std::cout << std::endl << "Total time needed: " << totaltime << " Minutes" << std::endl;
 }
 
 const void ConnectionPlan::printAdjacencyList(){
     for (auto it = stations.begin(); it != stations.end(); ++it ){
         std::cout << "Station: " << it->first << std::endl;
         for(unsigned int i = 0; i < it->second.size(); i++){
-            std::cout << it->second.at(i) << std::endl;
-            delete it->second.at(i);
-            it->second.erase(it->second.begin()+i);
+            std::cout << it->second.at(i)->getDestination() << std::endl;
         }
     }
 }

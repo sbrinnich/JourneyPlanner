@@ -44,7 +44,7 @@ class CompareHeapNode {
 public:
     bool operator()(HeapNode& n1, HeapNode& n2)
     {
-        if (n1.weight < n2.weight) return true;
+        if (n1.weight > n2.weight) return true;
         return false;
     }
 };
@@ -54,6 +54,9 @@ public:
  */
 class ConnectionPlan {
 private:
+    // Time for changing lines (in minutes)
+    const int changingtime = 5;
+
     // Adjacency list
     std::unordered_map<std::string, std::vector<Connection*> > stations;
 
