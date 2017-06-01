@@ -214,6 +214,15 @@ const void ConnectionPlan::printPath(std::map<std::string,Connection*> path, std
     std::cout << std::endl << "Total time needed: " << totaltime << " Minutes" << std::endl;
 }
 
+bool ConnectionPlan::setChangingTime(int newtime) {
+    if(newtime >= 0){
+        this->changingtime = newtime;
+        return true;
+    }
+    return false;
+}
+
+// For testing purposes
 const void ConnectionPlan::printAdjacencyList(){
     for (auto it = stations.begin(); it != stations.end(); ++it ){
         std::cout << "Station: " << it->first << std::endl;

@@ -32,6 +32,9 @@ public:
     const int getTraveltime();
 };
 
+/*
+ * Class for entries of priority list (heap for dijkstra algorithm)
+ */
 class HeapNode {
 public:
     HeapNode(Connection* connection, int weight, Connection* lastconnection);
@@ -40,6 +43,9 @@ public:
     Connection* lastconnection;
 };
 
+/*
+ * Class for comparing entries in priority list (heap for dijkstra algorithm)
+ */
 class CompareHeapNode {
 public:
     bool operator()(HeapNode& n1, HeapNode& n2)
@@ -55,7 +61,7 @@ public:
 class ConnectionPlan {
 private:
     // Time for changing lines (in minutes)
-    const int changingtime = 5;
+    int changingtime = 5;
 
     // Adjacency list
     std::unordered_map<std::string, std::vector<Connection*> > stations;
@@ -81,6 +87,10 @@ public:
     ConnectionPlan();
     ~ConnectionPlan();
 
+    /**
+     * Builds an adjacency list by reading a transport network from a file
+     * @param filepath path to file containing the transport network
+     */
     void readFromFile(std::string filepath);
 
     /**
@@ -95,6 +105,13 @@ public:
      * Prints the adjacency list (only for debugging purposes)
      */
     const void printAdjacencyList();
+
+    /**
+     * Sets the time needed for changing lines
+     * @param newtime new time in minutes
+     * @return true if time could be set or false otherwise
+     */
+    bool setChangingTime(int newtime);
 };
 
 #endif //JOURNEYPLANNER_ADJACENCYLIST_H
